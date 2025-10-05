@@ -1,0 +1,951 @@
+# Universidade de Brasília (UnB)
+# Atividade 01 - Comunicações móveis
+# Discente: Takeshi Ikeda
+# Projeto UMI LoS
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from scipy.stats import norm, expon
+from mpl_toolkits.mplot3d import Axes3D
+
+#-------
+# Configurações iniciais
+
+# Frequência central em GHz
+fc = 3  
+
+#transformar frequencia de 3 GHz em Hz
+fc_hz = fc*1e9
+
+# Número de multipercursos
+N = 100
+
+#Amostra aleatória - Variável de larga escala - apenas uma amostra
+M=1 
+
+#-------
+
+#Desvio é constante - UMI LoS - Em escala logarítimica
+desvio_umilos = 0.38
+
+#transformar desvio log em linear (seg)
+desvio_umilos_seg = 10 ** desvio_umilos
+
+#trasnformar linear seg em microsegundo
+desvio_umilos_microseg = desvio_umilos_seg*10**6
+
+#Apresentar resultado para o Desvio (log)
+print("Desvio UMI LoS [log]:=",desvio_umilos)
+
+# Eixo x: frequências de 0.5 a 100 GHz
+x = np.arange(0.5, 100, 1)
+
+#-------
+# Cálculos para o gráfico
+
+
+#Media (Log)
+media_umilos_1 = -0.204 * np.log10(1 + x) - 7.14
+#Media (seg)
+media_umilos_seg_1 = 10 ** media_umilos_1
+#Media (microseg)
+media_umilos_microseg_1 = media_umilos_seg_1 * 10**6 
+
+
+#Desvio é constante - UMI LoS - somente para traçar no gráfico
+desvio_umilos_1 = 0.38*np.ones_like(x)
+desvio_umilos_seg_1 = 10 ** desvio_umilos_1
+desvio_umilos_microseg_1 = desvio_umilos_seg_1*10**6
+
+#-------
+
+#-------
+# Plot do gráfico Media - Escala linear no eixo x
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, media_umilos_microseg_1, 'b-', linewidth=2, label="Media UMI LoS")
+#plt.xscale('log')
+plt.title("Espalhamento de atraso UMI LoS vs Frequência")
+plt.xlabel("Frequência (GHz)")
+plt.ylabel("Média (μs)")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# Plot do gráfico Media - Escala Log no eixo x
+plt.figure(figsize=(10, 6))
+plt.plot(x, media_umilos_microseg_1, 'b-', linewidth=2, label="Media UMI LoS")
+plt.xscale('log')
+plt.title("Espalhamento de atraso UMI LoS vs Frequência")
+plt.xlabel("Frequência (GHz)")
+plt.ylabel("Média (μs)")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# Plot do gráfico Desvio Padrao - Escala linear no eixo x - No caso do Desvio é constante
+plt.figure(figsize=(10, 6))
+plt.plot(x, desvio_umilos_microseg_1, 'b-', linewidth=2, label="Desvio Padrão UMI LoS")
+#plt.xscale('log')
+plt.title("Espalhamento de atraso UMI LoS vs Frequência")
+plt.xlabel("Frequência (GHz)")
+plt.ylabel("Desvio Padrão (μs)")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# Plot do gráfico Desvio Padrao - Escala Log no eixo x - No caso do Desvio é constante
+plt.figure(figsize=(10, 6))
+plt.plot(x, desvio_umilos_microseg_1, 'b-', linewidth=2, label="Desvio Padrão UMI LoS")
+plt.xscale('log')
+plt.title("Espalhamento de atraso UMI LoS vs Frequência")
+plt.xlabel("Frequência (GHz)")
+plt.ylabel("Desvio Padrão (μs)")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+#-------
+#N=100 amostras de multipercurso para f= 3GHz
+
+#-------
+
+#-------
+# Cálculos para fc = 3 GHz
+media_umilos = -0.204 * np.log10(1 + fc) - 7.14
+media_umilos_seg = 10 ** media_umilos
+
+print("Media UMI LoS @3GHz [log]:=",media_umilos)
+print("Desvio UMI LoS [log]:=",desvio_umilos)
+
+#-------
+
+#-------
+#Espalhamento de atraso - variável de larga escala - apenas uma amostra - escala logarítimica
+
+espalhamento_atraso=np.random.normal(media_umilos,desvio_umilos,M)
+
+#Transformar escala logarítimica em linear
+espalhamento_atraso_linear=10**espalhamento_atraso
+
+#-------
+
+
+
+#espalhamento de atraso eficaz do canal [linear]
+print("Espalhamento Atraso[Log]=",espalhamento_atraso)
+print("Espalhamento Atraso[Seg]=",espalhamento_atraso_linear)
+
+#Tabela 2: r=3 para UMI LoS
+#-------
+
+r=3
+
+#-------
+
+#Atraso multipercurso - Equação 4 - Variavel exponencial
+atraso_multipercurso_seg=np.random.exponential(r*espalhamento_atraso_linear,N)
+
+#print("Atraso[Seg]=",atraso_multipercurso_seg)
+
+#-------
+
+#Normalização do atraso multipercurso. Diminuir com o menor atraso. 
+#Atraso "zero" é a componente de visada direta
+atraso_multipercurso_seg_normalizado=atraso_multipercurso_seg - np.amin(atraso_multipercurso_seg)
+
+#ordenar a sequencia. Do menor para o maior atraso.
+atraso_multipercurso_seg_normalizado_ordenado=np.sort(atraso_multipercurso_seg_normalizado)
+
+
+#print("Atraso Normalizado [Seg]=",atraso_multipercurso_seg_normalizado)
+#print("Atraso Normalizado e Ordenado [Seg]=",atraso_multipercurso_seg_normalizado_ordenado)
+
+
+#Atraso multipercurso ordenado em microsegundo
+atraso_mp_us=atraso_multipercurso_seg_normalizado_ordenado*10**6
+
+#Apresentar o atraso mínimo e o máximo
+print("Atraso Mínimo [Micro Seg]=",np.min(atraso_mp_us))
+print("Atraso Máximo [Micro Seg]=",np.max(atraso_mp_us))
+
+#-------
+
+#media em microsegundos
+media_us=r*espalhamento_atraso_linear*10**6
+
+#escala x em microsegundos
+x_us = np.linspace(np.min(atraso_mp_us), np.max(atraso_mp_us), 100)
+
+#Distribuiução teórica - Exponencial
+dist_teorica_us = (1/media_us) * np.exp(-x_us/media_us)
+
+#Gráfico do Histograma e da curva teórica do atraso
+num_bins = 20
+plt.figure(figsize=(10, 6))
+#histograma
+plt.hist(atraso_mp_us, bins=num_bins, density=True, alpha=0.7, label='Histograma')
+#linha contínua teórica
+plt.plot(x_us, dist_teorica_us, 'b-', linewidth=2, label="Distribuição Teórica")
+
+plt.title('Histograma x Distribuição Teórica')
+plt.xlabel('Atraso [μs]')
+plt.ylabel('Distribuição')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+#-------
+
+#-------
+#Geração de Potencia multipercurso
+#Termo de sombreamento
+#Gaussiana de média 0 com desvio conforme cenário
+
+#UMI LoS => Desvio Padrão de sombreamento = 4 - Tabela 3
+dp_sombreamento_umilos=4
+
+#Distribuição Normal
+sombreamento=np.random.normal(0,dp_sombreamento_umilos,N)
+
+#print("Sombreamento=",sombreamento)
+
+#-------
+#Potência multipercurso preliminar
+
+#Perfil de Potência Multipercurso Preliminar - Equação 5 
+pot_mp_pre = np.exp(-atraso_multipercurso_seg_normalizado_ordenado*(r - 1)/media_us) * 10**(-sombreamento/10)
+
+plt.plot(x, pot_mp_pre, 'b-', linewidth=2, label="Perfil de Potência Multipercurso Preliminar")
+plt.title("Perfil de Potência Multipercurso")
+plt.xlabel("N")
+plt.ylabel("Potência")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+
+#-------
+#Fator de Rice - Kr - Tabela 4
+#Para UMI Los (dB)
+#Media = 9
+#Desvio Padrao = 5
+
+#Media e Desvio Padrão - Fator de Rice - Kr
+media_kr = 9
+dp_kr = 5
+
+#Variável Gaussiana em escala log - Apenas uma amostra
+kr_db=np.random.normal(media_kr,dp_kr,M)
+
+#Transformar em escala linear
+kr_linear=10**(kr_db/10)
+
+
+
+
+#-------
+#Potencia Total Dispersa - soma do segundo ao último termo das potências preliminares 2 a N => No python sintaxe [1:] => Slide 19/55
+pot_tot_dispersa=np.sum(pot_mp_pre[1:])
+
+
+#Potencia Total Dispersa Ajustada => Slide 20/55
+pot_ajuste_los=(1/(kr_linear+1))*(pot_mp_pre/pot_tot_dispersa)
+
+#Equação 6
+pot_ajuste_los[0] = (kr_linear)/(kr_linear+1)
+
+# Ganho total do canal => Slide 7/55
+#Slide 20/55 => No caso de LoS deve ser igual a 1
+omega_c=np.sum(pot_ajuste_los)
+
+#Comparar Kr calculado e o gerado
+print("Kr [Calculado]=",pot_ajuste_los[0]/(omega_c-pot_ajuste_los[0]))
+print("Kr [linear]=",kr_linear)
+
+#Verificar primeira componente
+print("Potencia LoS Calculo=",(kr_linear)/(kr_linear+1))
+print("Potencia LoS Vetor=",pot_ajuste_los[0])
+
+
+#print("Potência Preliminar [Alfa^2]=",pot_mp_pre)
+print("Potencia Total Dispersa [Omega_c]=",omega_c)
+#print("Ajuste Potencia LoS=",pot_ajuste_los)
+
+
+#-------
+#PDP - Potência multipercurso
+
+# Usando atraso_mp_us para o eixo x (ajustado para o tamanho correto)
+x_pdp = np.linspace(np.min(atraso_mp_us), np.max(atraso_mp_us), N)
+
+print("Atraso Mínimo [Micro Seg]=",np.min(atraso_mp_us))
+print("Atraso Máximo [Micro Seg]=",np.max(atraso_mp_us))
+
+#Gráfico PDP
+markerline, stemlines, baseline = plt.stem(x_pdp, pot_ajuste_los, linefmt='k-', markerfmt='k^', basefmt=" ")
+ 
+plt.setp(stemlines, 'linewidth', 1.5)    
+plt.setp(markerline, 'markersize', 4)  
+
+# escala eixo y em log
+plt.yscale('log')  
+plt.xlabel('Domínio de Atraso [μs]')
+plt.ylabel('PDP')
+plt.title('Perfil de atraso de potência com N = 100 componentes multipercurso')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+#-------
+
+# atraso médio ponderado => Slide 7/55
+atraso_medio_ponderado  = np.sum(atraso_multipercurso_seg_normalizado_ordenado * pot_ajuste_los) / omega_c  
+
+
+#Espalhamento de atraso eficaz calculado - RMS delay spread - Equação 3
+esp_atraso_eficaz_calc = np.sqrt(np.sum(pot_ajuste_los * (atraso_multipercurso_seg_normalizado_ordenado - atraso_medio_ponderado)**2) / omega_c)  
+
+
+print("O espalhamento de atraso gerado =", espalhamento_atraso_linear)
+print("O espalhamento de atraso calculado =" ,esp_atraso_eficaz_calc)
+
+
+#-------
+#Direções de chegada
+
+#Direções de chegada - Ângulo Azimutal
+
+#Estatística - Tabela 5
+#UMI LoS
+
+#Média do Espalhamento angular azimutal (escala logarítimica)
+med_esp_ang_az = -0.8 * np.log10(1+fc) + 1.73
+
+#Desvio Padrão do Espalhamento angular azimutal (escala logarítimica)
+dp_esp_ang_az = 0.014 * np.log10(1+fc) + 0.28
+
+#Gerar amostra do espalhamento angular azimutal - apenas um valor - em escala logarítimica
+am_esp_ang_az_log=np.random.normal(med_esp_ang_az,dp_esp_ang_az,M)
+
+#Converter escala logarítimica para graus
+am_esp_ang_az_dg=10**am_esp_ang_az_log
+
+#Converter graus para radiano - amostra do espalhamento angular azimutal
+am_esp_ang_az_rad = am_esp_ang_az_dg*(np.pi/180)
+
+#print("Espalhamento angular azimutal [rad]=",am_esp_ang_az_rad)
+
+#Modelo de Ângulos azimutais iniciais - Equação 8 [em radianos]
+ang_az_ini_rad = 1.42 * am_esp_ang_az_rad * (-np.log(pot_ajuste_los) / (np.max(pot_ajuste_los))) ** (1/2)
+
+#print("Angulos azimutais iniciais [rad]=",ang_az_ini_rad)
+
+#Gerar sinais aleatórios entre -1 e 1- Un => Slide 27/55 
+u_n = np.random.choice([-1, 1], size=N)
+
+#Gerar flutuações aleatórias Yn Distribuição Gaussiana - N=100 => Slide 28/55 
+y_n = np.random.normal(0, am_esp_ang_az_rad/7, N)
+
+#Calculo dos angulos finais => Slide 28/55 
+ang_az_fim_rad = u_n*ang_az_ini_rad + y_n
+
+#print("Angulos azimutais finais [rad]=",ang_az_fim_rad)
+
+#Ajuste para cenário LoS em radianos => Slide 28/55
+ang_az_fim_ajuste_los_rad=ang_az_fim_rad-ang_az_fim_rad[0]
+
+#print("Angulos azimutais finais ajustados LoS [rad]=",ang_az_fim_ajuste_los_rad)
+
+#Ajuste para cenário LoS em graus
+ang_az_fim_ajuste_los_dg=ang_az_fim_ajuste_los_rad*(180/np.pi)
+
+#print("Angulos azimutais finais ajustados LoS [deg]=",ang_az_fim_ajuste_los_dg)
+
+
+#Gráfico Direção de chegada - Ângulo azimutal
+plt.figure(figsize=(10, 6))
+plt.stem(ang_az_fim_ajuste_los_dg, pot_ajuste_los, basefmt=" ")
+plt.xlim([-180, 180])
+plt.xticks(np.arange(-180, 180, 20))
+#escala y logaritimico
+plt.yscale('log')  
+plt.xlabel('Ângulo de chegada em azimute (graus)', fontsize=12)
+plt.ylabel('Potência Normalizada', fontsize=12)
+plt.title('Potência angular chegada (ângulo azimutal)', fontsize=12)
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Gráfico Direção de chegada - Ângulo azimuta - Coordenada polar
+
+#plt.figure(figsize=(10, 6))
+#ax = plt.subplot(111, polar=True)
+
+#ax.set_rscale("log")
+#for ang, p in zip(ang_az_fim_ajuste_los_rad, pot_ajuste_los):
+    #    ax.plot([0, ang], [1e-10, p], 'b-')
+    #ax.plot(ang, p, marker="o", markersize=6, markerfacecolor="white", markeredgecolor="k")
+#ax.set_title("Coordenada Polar - Ângulo Azimutal")
+#plt.show()
+
+
+# Direção de Chegada - Angulo em Elevação - Tabela 6
+#UMI LoS
+
+#Média do Espalhamento angular em elevação (escala logarítimica)
+med_esp_ang_elev = -0.1*np.log10(1+fc) + 0.73
+
+
+#Desvio Padrão do Espalhamento angular em elevação (escala logarítimica)
+dp_esp_ang_elev = -0.04 * np.log10(1+fc) + 0.34
+
+#Gerar amostra do espalhamento angular em elevação - apenas um valor - em escala logarítimica
+am_esp_ang_elev_log=np.random.normal(med_esp_ang_elev,dp_esp_ang_elev,M)
+
+#Converter escala logarítimica para graus - amostra do espalhamento angular em elevação
+am_esp_ang_elev_dg=10**am_esp_ang_elev_log
+
+#Converter graus para radiano - amostra do espalhamento angular em elevação
+am_esp_ang_elev_rad = am_esp_ang_elev_dg*(np.pi/180)
+
+#print("Espalhamento angular em elevação [rad]=",am_esp_ang_elev_rad)
+
+
+#Angulo inicial em elevação - Equação 10 [em radianos]
+ang_elev_ini_rad = -am_esp_ang_elev_rad * (np.log(pot_ajuste_los) / np.max(pot_ajuste_los)) 
+
+#print("Angulos em elevação iniciais [rad]=",ang_elev_ini_rad)
+
+#Gerar sinais aleatórios - Un_elev - N=100 => Slide 32/55
+u_n_elev = np.random.choice([-1, 1], size=N)
+
+#Gerar flutuações aleatórias Yn_elev Distribuição Gaussiana - N=100 => Slide 33/55. Gaussina de média zero e desvio padrão = (Espalhamento angular em elevação)/7
+y_n_elev = np.random.normal(0, am_esp_ang_elev_rad/7, N)
+
+
+# Escolha arbitrariamente um angulo entre 0 e pi/2. Angulos em elevação - Angulo escolhido 45º => Slide 33/55
+ang_elev_med_arb_dg = 45  
+
+# Transformar em radiano o angulo arbitrario
+ang_elev_med_arb_rad=ang_elev_med_arb_dg*(np.pi/180)
+
+#Calculo dos angulos finais - Angulos em elevação => Slide 33/55
+ang_elev_fim_rad = u_n_elev*ang_elev_ini_rad + y_n_elev
+
+#print("Angulos em elevação finais [rad]=",ang_elev_fim_rad)
+
+#Ajuste para cenário LoS em radianos - Angulos em elevação => Slide 33/55
+ang_elev_fim_ajuste_los_rad=ang_elev_fim_rad-ang_elev_fim_rad[0]+ang_elev_med_arb_rad
+
+#print("Angulos em elevação finais ajustados LoS [rad]=",ang_elev_fim_ajuste_los_rad)
+
+
+#Ajuste para cenário LoS em graus - Angulos em elevação
+ang_elev_fim_ajuste_los_dg=ang_elev_fim_ajuste_los_rad*(180/np.pi)
+
+#print("Angulos em elevação finais ajustados LoS [deg]=",ang_elev_fim_ajuste_los_dg)
+
+#Gráfico e Angulos em elevação
+plt.figure(figsize=(10, 6))
+plt.stem(ang_elev_fim_ajuste_los_dg, pot_ajuste_los, basefmt=" ",markerfmt='^')
+plt.xlim([-180, 180])
+plt.xticks(np.arange(-180, 180, 10))
+#escala y logaritimico
+plt.yscale('log')  
+plt.xlabel('Ângulo de chegada em elevação (graus)', fontsize=12)
+plt.ylabel('Potência Normalizada', fontsize=12)
+plt.title('Potência angular chegada (ângulo em elevação)', fontsize=12)
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# Gráfico em coordenada polar angular elevação
+#plt.figure(figsize=(10, 6))
+#ax = plt.subplot(111, polar=True)
+
+#ax.set_rscale("log")
+#for ang, p in zip(ang_elev_fim_ajuste_los_rad, pot_ajuste_los):
+#    ax.plot([0, ang], [1e-10, p], 'b-')
+#    ax.plot(ang, p, marker="o", markersize=6, markerfacecolor="white", markeredgecolor="k")
+#ax.set_title("Círculo Angular - Ângulo Elevação")
+#plt.show()
+
+
+
+#-------
+# Converter para coordenadas cartesianas
+# Para possibilitar plotar gráfico do slide 36/55
+x = pot_ajuste_los * np.cos(ang_az_fim_ajuste_los_rad) * np.sin(ang_elev_fim_ajuste_los_rad)
+y = pot_ajuste_los * np.sin(ang_az_fim_ajuste_los_rad) * np.sin(ang_elev_fim_ajuste_los_rad)
+z = pot_ajuste_los * np.cos(ang_elev_fim_ajuste_los_rad)
+
+
+
+# Plotar
+fig = plt.figure(figsize=(10, 6))
+ax = fig.add_subplot(111, projection='3d')
+
+# Plotar linhas do centro até cada ponto
+for i in range(N):
+    ax.plot([0, x[i]], [0, y[i]], [0, z[i]], 'b-', alpha=0.6, linewidth=1,marker='^')
+    ax.plot([x[i]], [y[i]], [z[i]],  markersize=4)
+
+ax.set_title('Vetores 3D do Centro', fontsize=14)
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+ax.grid(True)
+plt.tight_layout()
+plt.show()
+
+#-------
+# Desvio Doppler
+
+
+#velocidar escalar vrx=5 m/s
+vrx5=5
+
+#velocidar escalar vrx=50 m/s
+vrx50=50
+
+# comprimento de onda em m para fc = 3 GHz / Considerar velocidade da luz = 3x10^8
+lambda_fc = 3e8 / fc_hz  
+
+#fixar angulo azimutal em 45 graus // teta
+az_v_rad = np.deg2rad(45)
+
+#fixar angulo em elevacao em 90 graus // fi
+elev_v_rad = np.deg2rad(90)
+
+# Para velocidade 5 m/s
+
+#componente x para 5 m/s
+vrx5_x=vrx5*(np.cos(az_v_rad) * np.sin(elev_v_rad))
+
+#componente y para 5 m/s
+vrx5_y=vrx5*(np.sin(az_v_rad) * np.sin(elev_v_rad))
+
+#componente z para 5 m/s
+vrx5_z=vrx5 * np.cos(elev_v_rad)
+
+
+#print("Vetor velocidade em x [5 m/s]=",vrx5_x)
+#print("Vetor velocidade em y [5 m/s]=",vrx5_y)
+#print("Vetor velocidade em z [5 m/s]=",vrx5_z)
+
+#Desvio Doppler - Equação 14 - Velocidade escalar de 5 m/s
+desv_doppler_n_5 = (1 / lambda_fc) * (vrx5_x * x/pot_ajuste_los + vrx5_y * y/pot_ajuste_los + vrx5_z * z/pot_ajuste_los )
+
+#print("Espectro Doppler [5 m/s]=",desv_doppler_n_5)
+print("Espectro Doppler Zero [5 m/s]=",desv_doppler_n_5[0])
+
+#Gráfico do Desvio Doppler para v = 5 m/s
+plt.figure(figsize=(10, 6))
+plt.stem(desv_doppler_n_5, pot_ajuste_los, linefmt="k-", markerfmt="ko", basefmt=" ")
+plt.title(f"Espectro Doppler (vrx={vrx5} m/s)")
+plt.xlabel("Desvio Doppler νn [Hz]")
+plt.ylabel("Espectro Doppler (escala log)")
+plt.yscale("log")
+plt.ylim([1e-8, 1])
+plt.grid(True, linestyle="--", alpha=0.7)
+plt.show()
+
+#---- para velocidade 50 m/s
+
+#componente x para 50 m/s
+vrx50_x=vrx50*(np.cos(az_v_rad) * np.sin(elev_v_rad))
+
+#componente y para 50 m/s
+vrx50_y=vrx50*(np.sin(az_v_rad) * np.sin(elev_v_rad))
+
+#componente z para 50 m/s
+vrx50_z=vrx50 * np.cos(elev_v_rad)
+
+
+#print("Vetor velocidade em x [50 m/s]=",vrx50_x)
+#print("Vetor velocidade em y [50 m/s]=",vrx50_y)
+#print("Vetor velocidade em z [50 m/s]=",vrx50_z)
+
+#Desvio Doppler - Equação 14 - Velocidade escalar de 5 m/s
+desv_doppler_n_50 = (1 / lambda_fc) * (vrx50_x * x/pot_ajuste_los + vrx50_y * y/pot_ajuste_los + vrx50_z * z/pot_ajuste_los )
+
+print("Espectro Doppler Zero [50 m/s]=",desv_doppler_n_50[0])
+
+
+
+#Gráfico do Desvio Doppler para v = 50 m/s
+plt.figure(figsize=(10, 6))
+plt.stem(desv_doppler_n_50, pot_ajuste_los, linefmt="k-", markerfmt="ko", basefmt=" ")
+plt.title(f"Espectro Doppler (vrx={vrx50} m/s)")
+plt.xlabel("Desvio Doppler νn [Hz]")
+plt.ylabel("Espectro Doppler (escala log)")
+plt.yscale("log")
+plt.ylim([1e-8, 1])
+plt.grid(True, linestyle="--", alpha=0.7)
+plt.show()
+
+
+# Fases multipercurso
+# Não foi 
+
+#fase estática para vrx = 5 m/s
+f_estatica_5=2*np.pi*((fc_hz+desv_doppler_n_5)*atraso_multipercurso_seg_normalizado_ordenado)
+
+#fase multipercurso para vrx = 5 m/s
+for i in range(N):
+    f_5=f_estatica_5-2*np.pi*desv_doppler_n_5*[i]
+
+#print("Fase Multipercurso [5 m/s]=",f_5)
+
+
+
+#fase estática para vrx = 50 m/s
+f_estatica_50=2*np.pi*((fc_hz+desv_doppler_n_50)*atraso_multipercurso_seg_normalizado_ordenado)
+
+#fase multipercurso para vrx = 5 m/s
+for i in range(N):
+    f_50=f_estatica_50-2*np.pi*desv_doppler_n_50*[i]
+
+#print("Fase Multipercurso [50 m/s]=",f_50)
+
+
+
+
+
+# Espalhamento temporal no sinal recebido
+
+#pulso retangular de amplitade unitaria
+#largura dt = 1e-7 / 1e-5  / 1e-3
+
+#Considerando Vrx = 5 m/5
+
+#Sinais emitidos no domínio temporal para δt ∈ {1e-7, 1e-5, 1e-3}
+delta_ts = [1e-7, 1e-5, 1e-3]
+Nt = 10**5
+s_t_dict = {}
+t_dict = {}
+
+#sinal transmitido
+for dt in delta_ts:
+    t = np.linspace(0, 5*dt, Nt)
+    s_t = ((t >= 0.0) & (t <= dt)).astype(float)
+    t_dict[dt] = t
+    s_t_dict[dt] = s_t
+
+#Definição das fases de cada percurso para cada δt ∈ {1e-7, 1e-5, 1e-3} - Equação 18
+fase_dict = {}
+for dt in delta_ts:
+    t = t_dict[dt]
+    fase = np.zeros((N, Nt))
+    for n in range(N):
+        tau_n = float(atraso_multipercurso_seg_normalizado_ordenado[n])
+        nu_n  = float(desv_doppler_n_5[n])
+        fase[n, :] = 2*np.pi*((fc_hz + nu_n)*tau_n - nu_n*t)
+    fase_dict[dt] = fase
+
+#Sinais recebidos para cada δt ∈ {1e-7, 1e-5, 1e-3}
+r_t_dict = {}
+
+#Sinal reebido Equação 18 tem o alfa
+alfa = np.sqrt(pot_ajuste_los)
+
+for dt in delta_ts:
+    t = t_dict[dt]
+    fase = fase_dict[dt]
+    r_t = np.zeros_like(t, dtype=complex)
+    for n in range(N):
+        tau_n = float(atraso_multipercurso_seg_normalizado_ordenado[n])
+        eco  = ((t >= tau_n) & (t <= (tau_n + dt))).astype(float)
+        r_t += alfa[n] * np.exp(-1j*fase[n, :]) * eco
+    r_t_dict[dt] = r_t
+
+#Plotar o gráfico Transmitido x Recebido em função de δt ∈ {1e-7, 1e-5, 1e-3}
+
+for dt in delta_ts:
+    t   = t_dict[dt]
+    s_t = s_t_dict[dt]
+    r_t = r_t_dict[dt]
+
+    # Expoente para notação 10^{expo}
+    expo = int(np.log10(dt))  # para 1e-7 -> -7, etc.
+    dt_pow = f"10^{{{expo}}}"  # sem $ aqui!
+
+    # Banda de coerência aproximada => Inverso do espalhamento de atraso eficaz - Equação 3
+    Bw_calc = 1 / esp_atraso_eficaz_calc
+
+    plt.figure(figsize=(10,6))
+    plt.plot(t/dt, s_t, label='Sinal transmitido', color='C0', linewidth=2)
+    plt.plot(t/dt, np.abs(r_t), label='Sinal recebido', color='C3', linewidth=2)
+
+    plt.xticks([1,2,3,4,5], [r'δt', r'2δt', r'3δt', r'4δt', r'5δt'])
+
+    plt.xlabel('Tempo', fontsize=14)
+    plt.ylabel('Amplitude', fontsize=14)
+    plt.title(
+        rf"Sinal transmitido vs recebido  ($\delta t = {dt_pow}\ \mathrm{{s}},\ v = 5\ \mathrm{{m/s}}$)" "\n"
+        rf"$B_w \approx {Bw_calc:.2e}\ \mathrm{{Hz}},\ \sigma_\tau = {esp_atraso_eficaz_calc*1e9:.2e}\ \mathrm{{ns}} $",
+        fontsize=15
+    )
+    plt.legend(fontsize=12)
+    plt.grid(True)
+    plt.tick_params(labelsize=12)
+    plt.tight_layout()
+    plt.show()
+
+
+#Considerando Vrx = 50 m/5
+
+#Sinais emitidos no domínio temporal para δt ∈ {1e-7, 1e-5, 1e-3}
+delta_ts = [1e-7, 1e-5, 1e-3]
+Nt = 10**5
+s_t_dict = {}
+t_dict = {}
+
+#sinal transmitido
+for dt in delta_ts:
+    t = np.linspace(0, 5*dt, Nt)
+    s_t = ((t >= 0.0) & (t <= dt)).astype(float)
+    t_dict[dt] = t
+    s_t_dict[dt] = s_t
+
+#Definição das fases de cada percurso para cada δt ∈ {1e-7, 1e-5, 1e-3} - Equação 18
+fase_dict = {}
+for dt in delta_ts:
+    t = t_dict[dt]
+    fase = np.zeros((N, Nt))
+    for n in range(N):
+        tau_n = float(atraso_multipercurso_seg_normalizado_ordenado[n])
+        nu_n  = float(desv_doppler_n_50[n])
+        fase[n, :] = 2*np.pi*((fc_hz + nu_n)*tau_n - nu_n*t)
+    fase_dict[dt] = fase
+
+#Sinais recebidos para cada δt ∈ {1e-7, 1e-5, 1e-3}
+r_t_dict = {}
+
+
+for dt in delta_ts:
+    t = t_dict[dt]
+    fase = fase_dict[dt]
+    r_t = np.zeros_like(t, dtype=complex)
+    for n in range(N):
+        tau_n = float(atraso_multipercurso_seg_normalizado_ordenado[n])
+        eco  = ((t >= tau_n) & (t <= (tau_n + dt))).astype(float)
+        r_t += alfa[n] * np.exp(-1j*fase[n, :]) * eco
+    r_t_dict[dt] = r_t
+
+#Plotar o gráfico Transmitido x Recebido em função de δt ∈ {1e-7, 1e-5, 1e-3}
+
+for dt in delta_ts:
+    t   = t_dict[dt]
+    s_t = s_t_dict[dt]
+    r_t = r_t_dict[dt]
+
+    # Expoente para notação 10^{expo}
+    expo = int(np.log10(dt))  # para 1e-7 -> -7, etc.
+    dt_pow = f"10^{{{expo}}}"  # sem $ aqui!
+
+    # Banda de coerência aproximada
+    #Bw_calc = 1 / esp_atraso_eficaz_calc
+
+    plt.figure(figsize=(10,6))
+    plt.plot(t/dt, s_t, label='Sinal transmitido', color='C0', linewidth=2)
+    plt.plot(t/dt, np.abs(r_t), label='Sinal recebido', color='C3', linewidth=2)
+
+    plt.xticks([1,2,3,4,5], [r'δt', r'2δt', r'3δt', r'4δt', r'5δt'])
+
+    plt.xlabel('Tempo', fontsize=14)
+    plt.ylabel('Amplitude', fontsize=14)
+    plt.title(
+        rf"Sinal transmitido vs recebido  ($\delta t = {dt_pow}\ \mathrm{{s}},\ v = 50\ \mathrm{{m/s}}$)" "\n"
+        rf"$B_w \approx {Bw_calc:.2e}\ \mathrm{{Hz}},\ \sigma_\tau = {esp_atraso_eficaz_calc*1e9:.2e}\ \mathrm{{ns}} $",
+        fontsize=15
+    )
+    plt.legend(fontsize=12)
+    plt.grid(True)
+    plt.tick_params(labelsize=12)
+    plt.tight_layout()
+    plt.show()
+
+
+#-------
+#AUTOCORRELAÇÃO DO CANAL
+
+#-------
+#Definição de Parâmetros
+
+kappa_max   = 1e10
+sigma_max   = 1.0
+K, S        = 10000, 10000
+kappa       = np.linspace(0.0, kappa_max, K)
+sigma  = np.linspace(0.0, sigma_max, S)
+
+
+#Sigma = 0 => ρTT (κ;0)  => Banda de Coerência - Equação 19
+
+rho_kappa = np.zeros(K, dtype=complex)
+for i in range(K):
+    rho_kappa[i] = np.sum(pot_ajuste_los * np.exp(-1j*2*np.pi*atraso_multipercurso_seg_normalizado_ordenado * kappa[i])) / omega_c
+
+abs_rho_kappa = np.abs(rho_kappa)
+
+#kappa = 0 => ρTT (0;σ) => Tempo de coerência - Equação 19 => Calcular para as duas situações (5 m/s e 50 m/s)
+
+#Para vrx = 5 m/5
+rho_sigma_5 = np.zeros(S, dtype=complex)
+for i in range(S):
+    rho_sigma_5[i] = np.sum(pot_ajuste_los * np.exp(+1j*2*np.pi*desv_doppler_n_5 * sigma[i])) / omega_c
+
+abs_rho_sigma_5 = np.abs(rho_sigma_5)
+
+#Para vrx = 50 m/5
+rho_sigma_50 = np.zeros(S, dtype=complex)
+for i in range(S):
+    rho_sigma_50[i] = np.sum(pot_ajuste_los * np.exp(+1j*2*np.pi*desv_doppler_n_50 * sigma[i])) / omega_c
+
+abs_rho_sigma_50 = np.abs(rho_sigma_50)
+
+
+#Banda de Coerência e Tempo de Coerência - limites
+
+
+#Banda de Coerência
+
+#rho_thresh_95 = 0.95
+#rho_thresh_90 = 0.90
+
+#idx_B = np.where(abs_rho_kappa < rho_thresh_95)[0]
+#Bc = kappa[idx_B[0]] if idx_B.size > 0 else 0.0
+
+#Tempo de Coerência
+
+#para v = 5 m/5
+#idx_T_5 = np.where(abs_rho_sigma_5 < rho_thresh_95)[0]
+#Tc_5 = sigma[idx_T_5[0]] if idx_T_5.size > 0 else 0.0
+
+#para v = 50 m/5
+#idx_T_50 = np.where(abs_rho_sigma_50 < rho_thresh_95)[0]
+#Tc_50 = sigma[idx_T_50[0]] if idx_T_50.size > 0 else 0.0
+
+
+# ρ(κ,0) vs κ (Banda de Coerência)
+# Pontos dos limiares 0.95 e 0.90
+# Função para encontrar os pontos de interseção. Retorna os pontos.
+def first_cross_interp(x, y, thr):
+    idx = np.where(y < thr)[0]
+    if idx.size == 0:
+        return np.nan, None, None
+    i = idx[0]
+    if i == 0:
+        return x[0], 0, 0
+    x1, x2 = x[i-1], x[i]
+    y1, y2 = y[i-1], y[i]
+
+    if y2 == y1:
+        x_cross = x2
+    else:
+        x_cross = x1 + (thr - y1) * (x2 - x1) / (y2 - y1)
+    return x_cross, i-1, i
+
+# Função para formatar notação científica no Latex. Retorna com as notações corretas
+def format_sci_tex(value):
+    exp = int(np.floor(np.log10(value)))
+    base = value / (10**exp)
+    return rf"{base:.2f}\times 10^{{{exp}}}"
+
+# Debug
+print("Debug do grafico auto correlação banda coerência zero=",abs_rho_kappa)
+    
+    
+# ρ(k,0) vs k (Banda de Coêrencia)
+# Limiares de 0.95 e 0.9
+
+Bc_095, i1_95, i2_95 = first_cross_interp(kappa, abs_rho_kappa, 0.95)
+Bc_090, i1_90, i2_90 = first_cross_interp(kappa, abs_rho_kappa, 0.90)
+
+plt.figure(figsize=(10,6))
+plt.semilogx(kappa,abs_rho_kappa, label='|ρ(κ,0)|', color='C0', linewidth=2)
+
+plt.axhline(0.95, color='gray', linestyle='--', linewidth=1)
+plt.axhline(0.90, color='gray', linestyle='--', linewidth=1)
+
+if not np.isnan(Bc_095):
+    plt.axvline(Bc_095, color='red', linestyle='--',
+                label=rf"$B_c(\rho_b=0.95) \approx {format_sci_tex(Bc_095)}\ \text{{Hz}}$")
+    plt.plot(Bc_095, 0.95, 'o', color='red', markersize=6, fillstyle='none')
+if not np.isnan(Bc_090):
+    plt.axvline(Bc_090, color='orange', linestyle='--',
+                label=rf"$B_c(\rho_b=0.90) \approx {format_sci_tex(Bc_090)}\ \text{{Hz}}$")
+    plt.plot(Bc_090, 0.90, 'o', color='orange', markersize=6, fillstyle='none')
+
+plt.xlabel('Desvio de frequência - κ (Hz)', fontsize=14)
+plt.ylabel('|ρ(κ,0)|', fontsize=14)
+plt.title('Autocorrelação em frequência e Banda de Coerência', fontsize=16)
+plt.legend(fontsize=12)
+plt.grid(True, which="both")
+plt.tick_params(labelsize=12)
+plt.xlim([1e0, 1e10])
+plt.xticks([1e0, 1e5, 1e10], ['10⁰','10⁵','10¹⁰'])
+plt.show()
+
+#|ρ(0,σ)| vs σ (Tempo de Coêrencia)
+# Limiares de 0.95 e 0.9
+# Verificar para 5 m/s e 50 m/s
+
+#para v = 5 m/s
+Tc_095, j1_95, j2_95 = first_cross_interp(sigma, abs_rho_sigma_5, 0.95)
+Tc_090, j1_90, j2_90 = first_cross_interp(sigma, abs_rho_sigma_5, 0.90)
+
+plt.figure(figsize=(10,6))
+plt.semilogx(sigma, abs_rho_sigma_5, label='|ρ(0,σ)|', color='C2', linewidth=2)
+
+plt.axhline(0.95, color='gray', linestyle='--', linewidth=1)
+plt.axhline(0.90, color='gray', linestyle='--', linewidth=1)
+
+if not np.isnan(Tc_095):
+    plt.axvline(Tc_095, color='red', linestyle='--',
+                label=rf"$T_c(\rho_b=0.95) \approx {format_sci_tex(Tc_095)}\ \text{{s}}$")
+    plt.plot(Tc_095, 0.95, 'o', color='red', markersize=6, fillstyle='none')
+if not np.isnan(Tc_090):
+    plt.axvline(Tc_090, color='orange', linestyle='--',
+                label=rf"$T_c(\rho_b=0.90) \approx {format_sci_tex(Tc_090)}\ \text{{s}}$")
+    plt.plot(Tc_090, 0.90, 'o', color='orange', markersize=6, fillstyle='none')
+
+plt.xlabel('Desvio temporal - σ (s)', fontsize=14)
+plt.ylabel('|ρ(0,σ)|', fontsize=14)
+plt.title('Autocorrelação temporal e Tempo de Coerência para v = 5 m/s', fontsize=16)
+plt.legend(fontsize=12)
+plt.grid(True, which="both")
+plt.tick_params(labelsize=12)
+plt.xlim([1e-6, 1e0])
+plt.show()
+
+#para v = 50 m/s
+Tc_095, j1_95, j2_95 = first_cross_interp(sigma, abs_rho_sigma_50, 0.95)
+Tc_090, j1_90, j2_90 = first_cross_interp(sigma, abs_rho_sigma_50, 0.90)
+
+plt.figure(figsize=(10,6))
+plt.semilogx(sigma, abs_rho_sigma_50, label='|ρ(0,σ)|', color='C2', linewidth=2)
+
+plt.axhline(0.95, color='gray', linestyle='--', linewidth=1)
+plt.axhline(0.90, color='gray', linestyle='--', linewidth=1)
+
+if not np.isnan(Tc_095):
+    plt.axvline(Tc_095, color='red', linestyle='--',
+                label=rf"$T_c(\rho_b=0.95) \approx {format_sci_tex(Tc_095)}\ \text{{s}}$")
+    plt.plot(Tc_095, 0.95, 'o', color='red', markersize=6, fillstyle='none')
+if not np.isnan(Tc_090):
+    plt.axvline(Tc_090, color='orange', linestyle='--',
+                label=rf"$T_c(\rho_b=0.90) \approx {format_sci_tex(Tc_090)}\ \text{{s}}$")
+    plt.plot(Tc_090, 0.90, 'o', color='orange', markersize=6, fillstyle='none')
+
+plt.xlabel('Desvio temporal - σ (s)', fontsize=14)
+plt.ylabel('|ρ(0,σ)|', fontsize=14)
+plt.title('Autocorrelação temporal e Tempo de Coerência para v = 50m/s', fontsize=16)
+plt.legend(fontsize=12)
+plt.grid(True, which="both")
+plt.tick_params(labelsize=12)
+plt.xlim([1e-6, 1e0])
+plt.show()
